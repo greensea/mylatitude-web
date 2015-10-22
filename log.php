@@ -1,5 +1,6 @@
 <?php
-$my = new mysqli('localhost', 'latitude', 'WZCy8uR63pvdAdRN', 'latitude');
+require_once('header.php');
+
 if ($my->connect_error) {
     die(json_encode(array(
         'code' => -1,
