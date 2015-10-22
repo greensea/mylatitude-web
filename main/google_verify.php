@@ -7,7 +7,7 @@ $uid = $_POST['uid'];
 
 $data = NULL;
 try {
-    $data = Fireebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
+    $data = Firebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
 }
 catch (Exception $e) {
     die(json_encode(array(
@@ -16,7 +16,7 @@ catch (Exception $e) {
     ), TRUE));
 }
 
-$gdata = $data;
+$gdata = json_decode(json_encode($data), TRUE);
 
 /// 检查 Google 数据是否合法 
 if (time() > $gdata['exp']) {
@@ -31,9 +31,9 @@ if (strcmp($gdata['aud'], $GOOGLE_CLIENT_ID) != 0) {
 
 
 /// 在数据库中创建对应的记录
-$sql = sprintf("INSERT INTO b_user (uid, google_uid, name, email, google_face, ctime) VALUES ('%s', '%s', '%s', '%s', %ld)",
+$sql = sprintf("INSERT INTO b_user (uid, google_uid, name, email, google_face, ctime) VALUES ('%s', '%s', '%s', '%s', '%s', %ld)",
             $uid, $my->real_escape_string($gdata['sub']), $my->real_escape_string($gdata['name']), $my->real_escape_string($gdata['email']), $my->real_escape_string($gdata['picture']), time());
-$my->query($sql) or die($my->error);
+$my->query($sql) or die($my->error . " ($sql)");
 
 apiout(0, '操作成功');
 ?>
