@@ -15,7 +15,7 @@ if (!is_array($j)) {
     apiout(-2, "输入数据格式不正确");
 }
 
-$user = getByUid($_GET['uid']);
+$user = getByUID($_GET['uid']);
 if (!$user) {
     apiout(-1, $_GET['uid'] . '不存在');
     die();

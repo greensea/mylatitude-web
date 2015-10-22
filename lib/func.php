@@ -15,7 +15,7 @@ function apiout($code, $message = NULL, $data = NULL) {
 }
 
 
-function getByUid($uid) {
+function getByUID($uid) {
     global $my;
     
     $sql = sprintf("SELECT * FROM b_user WHERE uid='${uid}'", $my->real_escape_string($uid));
