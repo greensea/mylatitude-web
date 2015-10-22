@@ -1,6 +1,8 @@
+<!DOCTYPE html>
 <?php require_once('../header.php')?>
-<html lang="en">
+<html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="<?php echo htmlspecialchars($GOOGLE_CLIENT_ID);?>">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
