@@ -15,13 +15,13 @@ if (!is_array($j)) {
     apiout(-2, "输入数据格式不正确");
 }
 
-$user = getByUid($j['uid']);
+$user = getByUid($_GET['uid']);
 if (!$user) {
-    apiout(-1, "{$j['uid']}不存在");
+    apiout(-1, $_GET['uid'] . '不存在');
     die();
 }
 $google_uid = $my->real_escape_string($user['google_uid']);
-$uid = $my->real_escape_string($j['uid']);
+$uid = $my->real_escape_string($_GET['uid']);
 
 foreach ($j['locations'] as $loc) {
     $rtime = (int)$loc['time'];
