@@ -13,5 +13,21 @@ function apiout($code, $message = NULL, $data = NULL) {
     
     echo json_encode($output, JSON_UNESCAPED_UNICODE);
 }
+
+
+function getByUid($uid) {
+    global $my;
     
+    $sql = sprintf("SELECT * FROM b_user WHERE uid='${uid}'", $my->real_escape_string($uid));
+    $res = $my->query($sql) or die($my->error > " ({$sql})");
+    
+    $user = $res->fetch_array();
+    if (!$user) {
+        return NULL;
+    }
+    else {
+        return $user;
+    }
+        
+}
 ?>
