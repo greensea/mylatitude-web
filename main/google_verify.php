@@ -9,7 +9,7 @@ $data = NULL;
 try {
     $data = Fireebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
 }
-catch ($e) {
+catch (Exception $e) {
     die(json_encode(array(
         'code' => -4,
         'message' => "解码 google token 出错：" . var_export($e, TRUE),
@@ -17,6 +17,17 @@ catch ($e) {
 }
 
 $gdata = $data;
+
+/// 检查 Google 数据是否合法 
+if (time() > $gdata['exp']) {
+    apiout(-1, "token 已经过期");
+    die();
+}
+
+if (strcmp($gdata['aud'], $GOOGLE_CLIENT_ID) != 0) {
+    apiout(-2, "Google CLIENT ID 不匹配");
+    die();
+}
 
 
 /// 在数据库中创建对应的记录
