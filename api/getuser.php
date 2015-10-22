@@ -11,15 +11,12 @@ if ($row) {
     $data = $row;
     $code = 0;
     $data = array(
-        'user' => array(
-            $row,
-        ),
+        'user' => $row
     );
 }
 else {
     $code = -1;
     $message = '用户不存在';
 }
-
 apiout($code, $message, $data);
 ?>

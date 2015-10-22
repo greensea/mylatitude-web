@@ -19,7 +19,7 @@ if (!is_array($j)) {
 
 $user = getByUID($_GET['uid']);
 if (!$user) {
-    apiout(-1, $_GET['uid'] . '不存在');
+    apiout(-3, $_GET['uid'] . '不存在');
     die();
 }
 $google_uid = $my->real_escape_string($user['google_uid']);
