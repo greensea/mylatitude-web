@@ -3,6 +3,7 @@ require_once('../header.php');
 
 if ($my->connect_error) {
     apiout(-1, $my->connect_error);
+    die();
 }
 
 
@@ -13,6 +14,7 @@ $raw = file_get_contents('php://input');
 $j = json_decode($raw, TRUE);
 if (!is_array($j)) {
     apiout(-2, "输入数据格式不正确");
+    die();
 }
 
 $user = getByUID($_GET['uid']);
