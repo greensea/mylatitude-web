@@ -48,8 +48,8 @@ foreach ($j as $loc) {
     $src = $my->real_escape_string($loc['src']);
     
     $sql = "REPLACE INTO b_location
-    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid) VALUES 
-    ('', ${ctime}, ${rtime}, ${latitude}, ${longitude}, ${accurateness}, ${altitude}, '{$google_uid}', '{$uid}')";
+    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid, src) VALUES 
+    ('', ${ctime}, ${rtime}, ${latitude}, ${longitude}, ${accurateness}, ${altitude}, '{$google_uid}', '{$uid}', '{$src}')";
     $ret = $result = $my->query($sql);
     
     if ($ret === FALSE) {
