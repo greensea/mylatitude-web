@@ -33,12 +33,12 @@ foreach ($j['locations'] as $loc) {
     $altitude = (double)$loc['altitude'];
     
     $sql = "REPLACE INTO b_location
-    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid) VALUES 
+    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid, uid) VALUES 
     ('', ${ctime}, ${rtime}, ${latitude}, ${longitude}, ${accurateness}, ${altitude}, '{$google_uid}', '{$uid}')";
     $ret = $result = $my->query($sql);
     
     if ($ret === FALSE) {
-        apiout(-2, $my->error);
+        apiout(-2, $my->error . " (${sql})");
         die();
     }
     else {
@@ -47,6 +47,6 @@ foreach ($j['locations'] as $loc) {
 }
 
 
-apiout(0, '操作成功');
+apiout(0, '操作成功', array('cnt' => $cnt));
 ?>
 
