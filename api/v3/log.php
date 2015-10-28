@@ -21,7 +21,7 @@ if ($my->connect_error) {
 }
 
 
-$name = $_GET['name'];
+$name = isset($_GET['name']) ? $_GET['name'] : '';
 $ctime = $_SERVER['REQUEST_TIME'];
 
 $raw = $_POST['locations'];
