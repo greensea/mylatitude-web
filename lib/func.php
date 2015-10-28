@@ -93,9 +93,14 @@ function apiout($code, $message = NULL, $data = NULL) {
     
     
     echo json_encode($output, JSON_UNESCAPED_UNICODE);
+    
+    die();
 }
 
 
+/**
+ * 根据 uid 获取一个用户的信息
+ */
 function getByUID($uid) {
     global $my;
     
@@ -141,5 +146,13 @@ function google_jwt_keys_refresh() {
     file_put_contents('/tmp/google_jwt_keys.json', $keys);
     
     return json_decode($keys, TRUE);
+}
+
+
+function postv($key, $default = NULL) {
+    return isset($_POST[$key]) ? $_POST[$key] : $default;
+}
+function getv($key, $default = NULL) {
+    return isset($_GET[$key]) ? $_GET[$key] : $default;
 }
 ?>
