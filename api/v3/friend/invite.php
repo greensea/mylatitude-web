@@ -30,22 +30,24 @@ else {
 }
 
 /// 检查是否存在未批准或拒绝的邀请
-$res = $db->select('b_invite', '*', [
+$where = ['AND' => [
     'sender_google_uid' => $user['google_uid'],
     'invited_google_uid' => $friend['google_uid'],
     'dtime' => 0,
     'atime' => 0,
-]);
+]];
+$res = $db->select('b_invite', '*', $where);
 if ($res && count($res) > 0) {
     apiout(-5, '您已经给对方发送过邀请了，正在等待对方回应');
 }
 
 /// 检查双方是否已经是好友了
-$res = $db->select('b_friend', '*', [
+$where = ['AND' => [
     'friend1_google_uid' => $user['google_uid'],
     'friend2_google_uid' => $friend['google_uid'],
     'dtime' => 0,
-]);
+]];
+$res = $db->select('b_friend', '*', $where);
 if ($res && count($res) > 0) {
     apiout(-6, '您和对方已经是好友了');
 }
