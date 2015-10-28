@@ -99,6 +99,18 @@ function apiout($code, $message = NULL, $data = NULL) {
     die();
 }
 
+function apiDeleteKeys($inarr, $keys) {
+    foreach ($keys as $key) {
+        foreach ($inarr as $k => $v) {
+            if (isset($inarr[$k][$key])) {
+                unset($inarr[$k][$key]);
+            }
+        }
+    }
+    
+    return $inarr;
+}
+
 
 /**
  * 根据 uid 获取一个用户的信息
@@ -149,6 +161,31 @@ function google_jwt_keys_refresh() {
     
     return json_decode($keys, TRUE);
 }
+
+
+/**
+ * 根据 Google UID 获取用户最后的位置信息
+ * 
+ * @return array    如果没有位置信息，则返回 null
+ */
+function getLastLocationByGoogleUID($google_uid) {
+    global $db;
+    
+    $where = [
+        'google_uid' => $google_uid,
+        'ORDER' => 'rtime DESC',
+    ];
+    
+    $res = $db->get('b_location', '*', $where);
+    
+    if ($res) {
+        return $res;
+    }
+    else {
+        return NULL;
+    }
+}
+    
 
 
 function postv($key, $default = NULL) {

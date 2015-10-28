@@ -1,11 +1,12 @@
 <?php
 /**
- * 拒绝一个好友请求
+ * 删除一个好友
  */
 require_once('../../../header.php');
 
 
 $invite_id = postv('invite_id');
+$email = postv('invite');
 $user = getByUID($uid);
 if (!$user) {
     LOGD("(uid={$uid}）找不到对应的用户");
