@@ -18,8 +18,8 @@ catch (Exception $e) {
     try {
         $data = Firebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
     }
-    catch ($e2) {
-        apiout(-4, "解码 google token 出错：" . $e2->getMessage())
+    catch (Exception $e2) {
+        apiout(-4, "解码 google token 出错：" . $e2->getMessage());
     }
 }
 

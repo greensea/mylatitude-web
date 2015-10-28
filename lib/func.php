@@ -1,8 +1,11 @@
 <?php
+$LOG_PATH = '/var/log/latitude.log';
 $LOG_LEVEL = LOG_DEBUG;
 
 /// 打印日志到指定的文件中
 function LOGS($log) {
+    global $LOG_PATH;
+
     if (/* C('log_traceback') == */ true) {
         $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $bt = array_slice($bt, 1);
@@ -32,7 +35,7 @@ function LOGS($log) {
     /// 附加日期
     $log = '[' . date(DATE_RFC822) . ']' . $log . "\n";
     
-    file_put_contents(C('log_path'), $log, FILE_APPEND);
+    file_put_contents($LOG_PATH, $log, FILE_APPEND);
 }
 
 /// 打印 Warning 级别的日志到 Syslog
@@ -113,7 +116,11 @@ function getByUID($uid) {
  * 获取 Goole JWT keys
  */
 function google_jwt_keys() {
-    return json_decode(file_get_contents('google_jwt_keys.json'), TRUE);
+    if (!file_exists('/tmp/google_jwt_keys.json')) {
+        LOGD("/tmp/google_jwt_keys.json 不存在");
+        return array();
+    }
+    return json_decode(file_get_contents('/tmp/google_jwt_keys.json'), TRUE);
 }
 
 /**
@@ -131,7 +138,7 @@ function google_jwt_keys_refresh() {
     
     LOGD("从谷歌服务器取到了 JWT key: " . $keys);
     
-    file_put_contents('google_jwt_keys.json', $keys);
+    file_put_contents('/tmp/google_jwt_keys.json', $keys);
     
     return json_decode($keys, TRUE);
 }
