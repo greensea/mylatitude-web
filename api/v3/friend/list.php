@@ -5,7 +5,7 @@
 require_once('../../../header.php');
 
 
-$uid = postv('uid');
+$uid = getv('uid');
 $user = getByUID($uid);
 if (!$user) {
     LOGD("(uid={$uid}）找不到对应的用户");
