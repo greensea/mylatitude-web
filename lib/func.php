@@ -81,6 +81,8 @@ function LOGD($log) {
 
 
 function apiout($code, $message = NULL, $data = NULL) {
+    header('Access-Control-Allow-Origin: *');
+    
     $output = array(
         'code' => $code
     );
