@@ -10,11 +10,20 @@ try {
     $data = Firebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
 }
 catch (Exception $e) {
-    die(json_encode(array(
-        'code' => -4,
-        'message' => "解码 google token 出错：" . var_export($e, TRUE),
-    ), TRUE));
+    /// 可能是 Google JWT keys 过期了，刷新并重试
+    LOGI("检验 google token 失败，可能是 JWT key 过期了，刷新 keys 后重试");
+    google_jwt_keys_refresh();
+    $GOOGLE_JWT_KEYS = google_jwt_keys();
+    
+    try {
+        $data = Firebase\JWT\JWT::decode($token, $GOOGLE_JWT_KEYS);
+    }
+    catch ($e2) {
+        apiout(-4, "解码 google token 出错：" . $e2->getMessage())
+    }
 }
+
+
 
 $gdata = json_decode(json_encode($data), TRUE);
 
