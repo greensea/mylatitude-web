@@ -38,6 +38,23 @@ if (strcmp($gdata['aud'], $GOOGLE_CLIENT_ID) != 0) {
     die();
 }
 
+/// 如果数据库中已经存在记录，则直接返回
+$uid_qs = $my->real_escape_string($uid);
+$google_uid_qs = $my->real_escape_string($gdata['sub']);
+$sql = "SELECT * FROM b_user WHERE uid='{$uid_qs}' AND google_uid='{$google_uid_qs}'";
+
+$res = $my->query($sql);
+if (!$res) {
+    apiout(-3, "查询失败：({$sql})");
+    die();
+}
+
+if ($row = $res->fetch_array()) {
+    LOGD("uid={$uid}, google_uid={$google_uid} 的用户已经在数据库中存在了，直接返回成功");
+    apiout(0, "操作成功，用户已存在");
+    die();
+}
+
 
 /// 在数据库中创建对应的记录
 $sql = sprintf("INSERT INTO b_user (uid, google_uid, name, email, google_face, ctime) VALUES ('%s', '%s', '%s', '%s', '%s', %ld)",
