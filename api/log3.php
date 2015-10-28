@@ -41,6 +41,7 @@ $uid = $my->real_escape_string($_GET['uid']);
 
 foreach ($j as $loc) {
     $rtime = (int)$loc['time'];
+    $rtime /= 1000;
     $latitude = (double)$loc['latitude'];
     $longitude = (double)$loc['longitude'];
     $accurateness = (int)$loc['accuracy'];
@@ -48,12 +49,13 @@ foreach ($j as $loc) {
     $src = $my->real_escape_string($loc['src']);
     
     $sql = "REPLACE INTO b_location
-    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid, src) VALUES 
+    (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid, uid, src) VALUES 
     ('', ${ctime}, ${rtime}, ${latitude}, ${longitude}, ${accurateness}, ${altitude}, '{$google_uid}', '{$uid}', '{$src}')";
     $ret = $result = $my->query($sql);
+file_put_contents("/tmp/abc", $sql . "\n");
     
     if ($ret === FALSE) {
-        apiout(-2, $my->error);
+        apiout(-2, $my->error . "({$sql})");
         die();
     }
     else {
