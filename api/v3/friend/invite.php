@@ -36,10 +36,9 @@ $res = $db->select('b_invite', '*', [
     'dtime' => 0,
     'atime' => 0,
 ]);
-if (!$res || count($res) <= 0) {
+if ($res && count($res) > 0) {
     apiout(-5, '您已经给对方发送过邀请了，正在等待对方回应');
 }
-$invite = $res[0];
 
 /// 检查双方是否已经是好友了
 $res = $db->select('b_friend', '*', [
