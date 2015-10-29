@@ -70,13 +70,18 @@ $db->action(function($db) {
             'invite_id' => $invite['invite_id'],
         ],
     ];
-    $db->insert('b_friend', $data);
+    $ret = $db->insert('b_friend', $data);
+    if (!$ret) {
+        $code = -7;
+        $message = '创建好友数据失败: ' . var_export($db->error(), TRUE);
+        return FALSE;
+    }
     
     
     /// 更新 invite 数据
     $where = ['invite_id' => $invite['invite_id']];
     $data = ['atime' => time()];
-    $db->update('b_invite', $data, $where);
+    $ret = $db->update('b_invite', $data, $where);
     
     
     $code = 0;
