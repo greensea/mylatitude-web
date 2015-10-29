@@ -14,12 +14,15 @@ if (!$user) {
 
 /// 查询好友数据
 $where = ['AND' => [
-    'friend1_google_id' => $user['google_uid'],
+    'friend1_google_uid' => $user['google_uid'],
     'dtime' => 0,
 ]];
+$join = [
+    '[>]b_friend' => ['friend2_google_uid' => 'google_uid']
+];
 
 $friends = array();
-$res = $db->select('b_friend', '*', $where);
+$res = $db->select('b_friend', $join, 'b_friend.*', $where);
 if ($res) {
     $friends = $res;
 }
@@ -44,7 +47,12 @@ $res = $db->select('b_invite', '*', $where);
 if ($res) {
     $sents = $res;
 }
-$sents = apiDeleteKeys($sents, ['google_uid', 'user_id']);
+
+/// 查询用户数据
+foreach ($sents as $k => $v) {
+    $user = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
+    $sents[$k]['invited_user'] = $user;
+}
 
 
 
@@ -61,6 +69,12 @@ if ($res) {
     $validates = $res;
 }
 $validates = apiDeleteKeys($validates, ['google_uid', 'user_id']);
+
+/// 查询用户数据
+foreach ($validates as $k => $v) {
+    $user = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
+    $sents[$k]['sender_user'] = $user;
+}
 
 
 
