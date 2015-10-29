@@ -25,6 +25,8 @@ if (!$friend) {
 
 
 /// 删除好友关联
+$code = 0;
+$message = '';
 $db->action(function ($db) {
     global $user;
     global $friend;

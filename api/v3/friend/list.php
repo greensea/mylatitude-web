@@ -20,7 +20,7 @@ $where = ['AND' => [
 
 $relations = array();
 $res = $db->select('b_friend', '*', $where);
-if ($res) {
+if ($res !== FALSE) {
     $relations = $res;
 }
 else {

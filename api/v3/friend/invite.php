@@ -35,6 +35,7 @@ $where = ['AND' => [
     'invited_google_uid' => $friend['google_uid'],
     'dtime' => 0,
     'atime' => 0,
+    'rtime' => 0,
 ]];
 $res = $db->select('b_invite', '*', $where);
 if ($res && count($res) > 0) {
