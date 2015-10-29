@@ -64,7 +64,7 @@ $db->action(function($db) {
             'invite_id' => $invite['invite_id'],
         ],
         [
-            'friend1_google_uid' => $invite['invite_google_uid'],
+            'friend1_google_uid' => $invite['invited_google_uid'],
             'friend2_google_uid' => $invite['sender_google_uid'],
             'ctime' => time(),
             'invite_id' => $invite['invite_id'],
@@ -72,13 +72,12 @@ $db->action(function($db) {
     ];
     foreach ($datas as $data) {
         $ret = $db->insert('b_friend', $data);
-        if (!$ret) {
+        if (!$ret && false) {
             $code = -7;
             $message = '创建好友数据失败: ' . var_export($db->error(), TRUE);
             return FALSE;
         }
     }
-    
     /// 更新 invite 数据
     $where = ['invite_id' => $invite['invite_id']];
     $data = ['atime' => time()];

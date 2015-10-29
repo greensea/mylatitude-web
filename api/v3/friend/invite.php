@@ -64,7 +64,9 @@ $data = [
     'sender_google_uid' => $user['google_uid'],
     'invited_google_uid' => $friend['google_uid'],
 ];
-$db->insert('b_invite', $data);
+$ret = $db->insert('b_invite', $data);
+
+LOGD("新建邀请编号是{$ret}");
 
 apiout(0, '已经向对方发送了邀请');
 
