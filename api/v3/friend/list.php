@@ -37,7 +37,8 @@ $sents = array();
 $where = ['AND' => [
     'sender_google_uid' => $user['google_uid'],
     'dtime' => 0,
-    'atime' => 0
+    'atime' => 0,
+    'rtime' => 0,
 ]];
 $res = $db->select('b_invite', '*', $where);
 if ($res) {
@@ -52,7 +53,8 @@ $validates = array();
 $where = ['AND' => [
     'invited_google_uid' => $user['google_uid'],
     'dtime' => 0,
-    'atime' => 0
+    'atime' => 0,
+    'rtime' => 0,
 ]];
 $res = $db->select('b_invite', '*', $where);
 if ($res) {

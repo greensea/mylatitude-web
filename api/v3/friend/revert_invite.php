@@ -1,6 +1,6 @@
 <?php
 /**
- * 发送一个好友请求
+ * 撤销一个好友请求
  */
 require_once('../../../header.php');
 
@@ -29,8 +29,17 @@ else {
     $friend = $friends[0];
 }
 
-/// 创建请求
-apiout(0, '成功发送请求 ');
+/// 撤销请求
+$where = ['AND' => [
+    'sender_google_uid' => $user['google_uid'],
+    'invited_google_uid' => $friend['google_uid'],
+    'dtime' => 0,
+    'atime' => 0,
+    'rtime' => 0
+]];
+$data = ['rtime' => time()];
+$db->update('b_invite', $data, $where);
 
+apiout(0, '成功撤销了好友请求');
 ?>
 

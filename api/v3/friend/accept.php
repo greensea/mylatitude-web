@@ -6,7 +6,7 @@ require_once('../../../header.php');
 
 
 $invite_id = postv('invite_id');
-$email = postv('invite');
+
 $user = getByUID($uid);
 if (!$user) {
     LOGD("(uid={$uid}）找不到对应的用户");
@@ -38,6 +38,14 @@ $db->action(function($db) {
         $code = -5;
         $message = 'invite_id 参数错误';
         return false;
+    }
+    
+    /// 检查对应的请求是否有效
+    if ($invite['dtime'] != 0 || $invite['atime'] != 0 || $invite['rtime'] != 0) {
+        LOGD("请求（invite_id={$invite_id}）已失效：" . var_export($invite, TRUE));
+        $code = -6;
+        $message = '请求已失效';
+        return FALSE;
     }
     
     
