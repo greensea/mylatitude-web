@@ -12,23 +12,36 @@ if (!$user) {
     apiout(-2, '你还没有登录');
 }
 
-/// 查询好友数据
+/// 查询好友关系数据
 $where = ['AND' => [
     'friend1_google_uid' => $user['google_uid'],
     'dtime' => 0,
 ]];
-$join = [
-    '[>]b_user' => ['friend2_google_uid' => 'google_uid']
-];
 
-$friends = array();
-$res = $db->select('b_friend', $join, '*', $where);
+$relations = array();
+$res = $db->select('b_friend', 'friend2_google_uid', $where);
 if ($res) {
-    $friends = $res;
+    $relations = $res;
 }
 else {
     apiout(-10, '查询失败: (' . $db->last_query() . ')' . var_export($db->error(), TRUE));
 }
+
+/// 建立好友数据
+$friends = array();
+foreach ($relations as $relation) {
+    $where = [
+        'AND' => [
+            'google_uid' => $relation['friend2_google_uid']
+        ],
+        'ORDER' => 'user_id DESC',
+    ];
+    $res = $db->get('b_user', $where);
+    if ($res) {
+        $friends[] = $res;
+    }
+}
+
 
 /// 查询好友的位置信息
 foreach ($friends as $k => $v) {
