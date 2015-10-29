@@ -6,6 +6,7 @@ require_once('../../../header.php');
 
 
 $invite_id = postv('invite_id');
+$uid = postv('uid');
 
 $user = getByUID($uid);
 if (!$user) {
