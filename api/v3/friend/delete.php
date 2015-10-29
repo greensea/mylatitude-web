@@ -5,7 +5,7 @@
 require_once('../../../header.php');
 
 
-$email = postv('invite');
+$email = postv('email');
 $uid = postv('uid');
 $user = getByUID($uid);
 if (!$user) {
@@ -13,6 +13,14 @@ if (!$user) {
     apiout(-2, '你还没有登录');
 }
 
+$where = [
+    'AND' => ['email' => $email],
+    'ORDER' => 'user_id DESC'
+];
+$friend = $db->get('b_user', '*', $where);
+if (!$friend) {
+    apiout(-10, '对方不是你的朋友');
+}
 
 
 
@@ -20,6 +28,8 @@ if (!$user) {
 $db->action(function ($db) {
     global $user;
     global $friend;
+    global $code;
+    global $message;
     
     $where = [
         'OR #cond1' => [
@@ -29,15 +39,21 @@ $db->action(function ($db) {
                 'dtime' => 0,
             ],
             'AND #cond1.2' => [
-                'friend1_google_uid' => $user['google_uid'],
-                'friend2_google_uid' => $friend['google_uid'],
+                'friend1_google_uid' => $friend['google_uid'],
+                'friend2_google_uid' => $user['google_uid'],
                 'dtime' => 0
             ],
         ]
     ];
     $data = ['dtime' => time()];
     
-    $db->update('b_friend', $data, $where);
+    $ret = $db->update('b_friend', $data, $where);
+    if ($ret === FALSE) {
+        $msg = '数据库操作失败: ' . var_export($db->error(), TRUE) . ' (' . $db->last_query() . ')';
+        $code = -11;
+        $message = '数据库操作失败: ' . $msg;
+        return FALSE;
+    }
     
     return true;
 });
