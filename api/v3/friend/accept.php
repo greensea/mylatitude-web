@@ -71,7 +71,7 @@ $db->action(function($db) {
         ],
     ];
     $ret = $db->insert('b_friend', $data);
-    if (!$ret) {
+    if (!$ret || !$ret[0] || !$ret[1]) {
         $code = -7;
         $message = '创建好友数据失败: ' . var_export($db->error(), TRUE);
         return FALSE;
