@@ -21,7 +21,10 @@ if (!$invite_id) {
 
 /// 删除好友关联
 $db->action(function ($db) {
-   $where = [
+    global $user;
+    global $friend;
+    
+    $where = [
         'OR #cond1' => [
             'AND #cond1.1' => [
                 'friend1_google_uid' => $user['google_uid'],

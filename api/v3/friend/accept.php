@@ -23,6 +23,11 @@ if (!$invite_id) {
 $code = 0;
 $message = '操作成功';
 $db->action(function($db) {
+    global $invite_id;
+    global $user;
+    global $code;
+    global $message;
+    
     $res = $db->select('b_invite', '*', ['invite_id' => $invite_id]);
     if (!$res || count($res) <= 0) {
         $code = -4;
