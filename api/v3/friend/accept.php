@@ -64,7 +64,7 @@ $db->action(function($db) {
             'invite_id' => $invite['invite_id'],
         ],
         [
-            'friend1_google_uid' => $invite['invite_google_uid'],
+            'friend1_google_uid' => $invite['invited_google_uid'],
             'friend2_google_uid' => $invite['sender_google_uid'],
             'ctime' => time(),
             'invite_id' => $invite['invite_id'],
