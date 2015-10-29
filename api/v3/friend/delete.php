@@ -17,9 +17,9 @@ $where = [
     'AND' => ['email' => $email],
     'ORDER' => 'user_id DESC'
 ];
-$friend = $db->get('b_user', '*', $where);
+$friend = $db->debug()->get('b_user', '*', $where);
 if (!$friend) {
-    apiout(-10, '对方不是你的朋友');
+    apiout(-10, 'email参数错误');
 }
 
 
