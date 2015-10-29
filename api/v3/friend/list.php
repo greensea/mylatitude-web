@@ -18,20 +18,23 @@ $where = ['AND' => [
     'dtime' => 0,
 ]];
 $join = [
-    '[>]b_friend' => ['friend2_google_uid' => 'google_uid']
+    '[>]b_user' => ['friend2_google_uid' => 'google_uid']
 ];
 
 $friends = array();
-$res = $db->select('b_friend', $join, 'b_friend.*', $where);
+$res = $db->select('b_friend', $join, '*', $where);
 if ($res) {
     $friends = $res;
+}
+else {
+    apiout(-10, '查询失败: (' . $db->last_query() . ')' . var_export($db->error(), TRUE));
 }
 
 /// 查询好友的位置信息
 foreach ($friends as $k => $v) {
     $friends[$k]['location'] = getLastLocationByGoogleUID($v['google_uid']);
 }
-$friends = apiDeleteKeys($friends, ['google_uid', 'user_id']);
+$friends = apiDeleteKeys($friends, ['google_uid', 'user_id', 'uid', 'friend1_google_uid', 'friend2_google_uid']);
 
 
 
