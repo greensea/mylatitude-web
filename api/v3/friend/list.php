@@ -42,7 +42,7 @@ $where = ['AND' => [
 ]];
 $res = $db->select('b_invite', '*', $where);
 if ($res) {
-    $sent = $res;
+    $sents = $res;
 }
 $sents = apiDeleteKeys($sents, ['google_uid', 'user_id']);
 
@@ -60,7 +60,7 @@ $res = $db->select('b_invite', '*', $where);
 if ($res) {
     $validates = $res;
 }
-$validates = apiDeleteKeys($sents, ['google_uid', 'user_id']);
+$validates = apiDeleteKeys($validates, ['google_uid', 'user_id']);
 
 
 
