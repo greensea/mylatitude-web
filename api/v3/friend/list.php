@@ -19,14 +19,13 @@ $where = ['AND' => [
 ]];
 
 $relations = array();
-$res = $db->select('b_friend', 'friend2_google_uid', $where);
+$res = $db->select('b_friend', '*', $where);
 if ($res) {
     $relations = $res;
 }
 else {
     apiout(-10, '查询失败: (' . $db->last_query() . ')' . var_export($db->error(), TRUE));
 }
-
 /// 建立好友数据
 $friends = array();
 foreach ($relations as $relation) {
@@ -36,7 +35,8 @@ foreach ($relations as $relation) {
         ],
         'ORDER' => 'user_id DESC',
     ];
-    $res = $db->get('b_user', $where);
+
+    $res = $db->get('b_user', '*', $where);
     if ($res) {
         $friends[] = $res;
     }
