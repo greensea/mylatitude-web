@@ -82,7 +82,11 @@ $db->action(function($db) {
     $where = ['invite_id' => $invite['invite_id']];
     $data = ['atime' => time()];
     $ret = $db->update('b_invite', $data, $where);
-    
+    if ($ret === FALSE) {
+        $code = -8;
+        $message = '更新 invite 数据失败: ' . var_export($db->error(), TRUE);
+        return FALSE;
+    }
     
     $code = 0;
     $message = '好友添加成功';
