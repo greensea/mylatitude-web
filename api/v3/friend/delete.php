@@ -5,17 +5,14 @@
 require_once('../../../header.php');
 
 
-$invite_id = postv('invite_id');
 $email = postv('invite');
+$uid = postv('uid');
 $user = getByUID($uid);
 if (!$user) {
     LOGD("(uid={$uid}）找不到对应的用户");
     apiout(-2, '你还没有登录');
 }
 
-if (!$invite_id) {
-    apiout(-3, "invite_id 参数错误");
-}
 
 
 
