@@ -50,8 +50,8 @@ if ($res) {
 
 /// 查询用户数据
 foreach ($sents as $k => $v) {
-    $user = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
-    $sents[$k]['invited_user'] = $user;
+    $u = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
+    $sents[$k]['invited_user'] = $u;
 }
 
 
@@ -68,12 +68,11 @@ $res = $db->select('b_invite', '*', $where);
 if ($res) {
     $validates = $res;
 }
-$validates = apiDeleteKeys($validates, ['google_uid', 'user_id']);
 
 /// 查询用户数据
 foreach ($validates as $k => $v) {
-    $user = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
-    $sents[$k]['sender_user'] = $user;
+    $u = $db->get('b_user', ['name', 'email', 'google_face'], ['google_uid' => $v['invited_google_uid']]);
+    $validates[$k]['sender_user'] = $u;
 }
 
 
