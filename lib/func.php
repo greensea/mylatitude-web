@@ -194,4 +194,49 @@ function postv($key, $default = NULL) {
 function getv($key, $default = NULL) {
     return isset($_GET[$key]) ? $_GET[$key] : $default;
 }
+
+/**
+ * 根据用户 google uid 获取该用户的好友的信息以及好友最后位置信息，好友的最后位置信息保存在 location 字段中
+ */
+function getFriendsWithLocationByGoogleUID($google_uid) {
+    /// 查询好友关系数据
+    $where = ['AND' => [
+        'friend1_google_uid' => $google_uid,
+        'dtime' => 0,
+    ]];
+
+    $relations = array();
+    $res = $db->select('b_friend', '*', $where);
+    if ($res !== FALSE) {
+        $relations = $res;
+    }
+    else {
+        apiout(-10, '查询失败: (' . $db->last_query() . ')' . var_export($db->error(), TRUE));
+    }
+    
+    /// 建立好友数据
+    $friends = array();
+    foreach ($relations as $relation) {
+        $where = [
+            'AND' => [
+                'google_uid' => $relation['friend2_google_uid']
+            ],
+            'ORDER' => 'user_id DESC',
+        ];
+
+        $res = $db->get('b_user', '*', $where);
+        if ($res) {
+            $friends[] = $res;
+        }
+    }
+
+
+    /// 查询好友的位置信息
+    foreach ($friends as $k => $v) {
+        $friends[$k]['location'] = getLastLocationByGoogleUID($v['google_uid']);
+    }
+    $friends = apiDeleteKeys($friends, ['google_uid', 'user_id', 'uid', 'friend1_google_uid', 'friend2_google_uid']);
+
+    return $friends;
+}
 ?>

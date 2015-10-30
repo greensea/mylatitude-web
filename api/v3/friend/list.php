@@ -12,43 +12,7 @@ if (!$user) {
     apiout(-2, '你还没有登录');
 }
 
-/// 查询好友关系数据
-$where = ['AND' => [
-    'friend1_google_uid' => $user['google_uid'],
-    'dtime' => 0,
-]];
-
-$relations = array();
-$res = $db->select('b_friend', '*', $where);
-if ($res !== FALSE) {
-    $relations = $res;
-}
-else {
-    apiout(-10, '查询失败: (' . $db->last_query() . ')' . var_export($db->error(), TRUE));
-}
-/// 建立好友数据
-$friends = array();
-foreach ($relations as $relation) {
-    $where = [
-        'AND' => [
-            'google_uid' => $relation['friend2_google_uid']
-        ],
-        'ORDER' => 'user_id DESC',
-    ];
-
-    $res = $db->get('b_user', '*', $where);
-    if ($res) {
-        $friends[] = $res;
-    }
-}
-
-
-/// 查询好友的位置信息
-foreach ($friends as $k => $v) {
-    $friends[$k]['location'] = getLastLocationByGoogleUID($v['google_uid']);
-}
-$friends = apiDeleteKeys($friends, ['google_uid', 'user_id', 'uid', 'friend1_google_uid', 'friend2_google_uid']);
-
+$friends = getFriendsWithLocationByGoogleUID($user['google_uid']);
 
 
 /// 查询已发邀请的好友数据
