@@ -13,7 +13,7 @@
  * 如果操作成功应返回　"ok"，即　die("ok");
  * 如果操作失败应返回错误信息和描述
  */
-require_once('../header.php');
+require_once('../../header.php');
 
 if ($my->connect_error) {
     apiout(-1, $my->connect_error);
