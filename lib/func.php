@@ -199,6 +199,8 @@ function getv($key, $default = NULL) {
  * 根据用户 google uid 获取该用户的好友的信息以及好友最后位置信息，好友的最后位置信息保存在 location 字段中
  */
 function getFriendsWithLocationByGoogleUID($google_uid) {
+    global $db;
+
     /// 查询好友关系数据
     $where = ['AND' => [
         'friend1_google_uid' => $google_uid,
