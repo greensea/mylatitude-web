@@ -229,7 +229,7 @@ function getFriendsWithLocationByGoogleUID($google_uid) {
         $user = $db->get('b_user', '*', $where);
         if ($user) {
             $user['latitude_face'] = str_replace('/s96-c/', '/s48-c/', $user['google_face']);
-            $friends[] = $res;
+            $friends[] = $user;
         }
     }
 
