@@ -166,20 +166,38 @@ function google_jwt_keys_refresh() {
 /**
  * 根据 Google UID 获取用户最后的位置信息
  * 
+ * @param string    用户的谷歌用户编号
+ * @param int       从最近的 5 条记录中，选取精度最大的记录，但这些记录的 rtime 不能小于最新记录的 rtime - $time_range
  * @return array    如果没有位置信息，则返回 null
  */
-function getLastLocationByGoogleUID($google_uid) {
+function getLastLocationByGoogleUID($google_uid, $time_range = 60) {
     global $db;
     
     $where = [
-        'google_uid' => $google_uid,
+        'AND' => [
+            'google_uid' => $google_uid,
+        ],
         'ORDER' => 'rtime DESC',
+        'LIMIT' => 5,
     ];
     
-    $res = $db->get('b_location', '*', $where);
+    $res = $db->select('b_location', '*', $where);
     
     if ($res) {
-        return $res;
+        $loc = $res[0];
+        
+        for ($i = 1; $i < count($res); $i++) {
+            if ($loc['rtime'] - $res[$i]['rtime'] > $time_range) {
+                break;
+            }
+            
+            if ((float)$loc['accurateness'] > (float)$res[$i]['accurateness']) {
+                $loc = $res[$i];
+            }
+        }
+        
+        
+        return $loc;
     }
     else {
         return NULL;
