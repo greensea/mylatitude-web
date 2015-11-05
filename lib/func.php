@@ -196,6 +196,8 @@ function getLastLocationByGoogleUID($google_uid, $time_range = 60) {
             }
         }
         
+        unset($loc['uid']);
+        unset($loc['google_uid']);
         
         return $loc;
     }
