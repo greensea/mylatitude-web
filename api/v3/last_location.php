@@ -42,6 +42,7 @@ if (!$loc) {
     die();
 }
 else {
+    unset($loc['uid']);
     apiout(0, "操作成功", $loc);
     die();
 }
