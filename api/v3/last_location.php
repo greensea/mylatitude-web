@@ -36,7 +36,7 @@ if (!$res) {
     die();
 }
 
-$loc = $res->fetch_array();
+$loc = $res->fetch_array(MYSQL_ASSOC);
 if (!$loc) {
     apiout(-4, "uid=`{$uid}' 的用户未上报任何位置(google_uid=`{$user['google_uid']}')");
     die();
