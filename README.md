@@ -1,7 +1,7 @@
 # mylatitude-web
 我的纵横服务器端源代码
 
-## 配置方
+## 配置方法
 ```
 cp config.sample.php config.php
 ```
