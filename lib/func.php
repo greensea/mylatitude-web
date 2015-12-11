@@ -352,6 +352,37 @@ function distanceDelta($location) {
 
 
 /**
+ * 获取用户的统计信息
+ * 
+ * @param string    用户唯一编号
+ * @param mixed     需要获取的统计信息的字段，默认返回所有字段，如果只需要特定字段，请传入字段名数组，如 ['distance', 'distance_per_day']
+ */
+function getUserStatData($uid, $fields = '*') {
+    global $db;
+    
+    $user = getByUID($uid);
+    if (!$user) {
+        LOGW("编号为 {$uid} 的用户不存在");
+        return FALSE;
+    }
+    
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid'],
+        ]
+    ];
+    $stat = $db->get('b_stat', $fields, $where);
+    
+    if (!$stat) {
+        createUserStatData($uid);
+    }
+    
+    $stat = $db->get('b_stat', $fields, $where);
+    
+    return $stat;
+}
+
+/**
  * 根据最新上报的位置信息，更新用户的统计数据
  */
 function updateUserStatData($location) {
