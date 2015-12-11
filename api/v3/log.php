@@ -39,7 +39,9 @@ if (!$user) {
 $google_uid = $my->real_escape_string($user['google_uid']);
 $uid = $my->real_escape_string($_GET['uid']);
 
+$cnt = 0;
 foreach ($j as $loc) {
+    
     $rtime = (int)$loc['time'];
     $rtime /= 1000;
     $latitude = (double)$loc['latitude'];
@@ -48,6 +50,31 @@ foreach ($j as $loc) {
     $altitude = (double)$loc['altitude'];
     $src = $my->real_escape_string($loc['src']);
     
+    
+    /// 如果位置还没有添加过，则更新用户移动距离
+    $where = [
+        'AND' => [
+            'rtime' => $rtime,
+            'uid' => $user['uid'],
+        ]
+    ];
+    
+    $loc = $db->get('b_location', $where);
+    if (!$loc) {
+        updateUserStatData([
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'rtime' => $rtime,
+            'accurateness' => $accurateness,
+            'uid' => $user['uid'],
+        ]);
+    }
+    else {
+        LOGD("位置记录记录(uid={$uid}, rtime={$rtime})已存在，不计算移动距离");
+    }
+    
+    
+    /// 添加位置记录
     $sql = "REPLACE INTO b_location
     (name, ctime, rtime, latitude, longitude, accurateness, altitude, google_uid, uid, src) VALUES 
     ('', ${ctime}, ${rtime}, ${latitude}, ${longitude}, ${accurateness}, ${altitude}, '{$google_uid}', '{$uid}', '{$src}')";
