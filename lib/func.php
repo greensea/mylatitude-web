@@ -1,7 +1,4 @@
 <?php
-$LOG_PATH = '/var/log/latitude.log';
-$LOG_LEVEL = LOG_DEBUG;
-
 /// 打印日志到指定的文件中
 function LOGS($log) {
     global $LOG_PATH;
@@ -33,7 +30,11 @@ function LOGS($log) {
     //syslog(LOG_INFO, $log);
     
     /// 附加日期
-    $log = '[' . date(DATE_RFC822) . ']' . $log . "\n";
+    $ms = microtime(TRUE);
+    $ms -= floor($ms);
+    $ms = round($ms * 1000);
+    $ms = sprintf('%03d', $ms);
+    $log = '[' . date(DATE_RFC822) . '.' . $ms . ']' . $log . "\n";
     
     file_put_contents($LOG_PATH, $log, FILE_APPEND);
 }
@@ -95,7 +96,12 @@ function apiout($code, $message = NULL, $data = NULL) {
     }
     
     
-    echo json_encode($output, JSON_UNESCAPED_UNICODE);
+    $output = json_encode($output, JSON_UNESCAPED_UNICODE);
+    echo $output;
+    
+    if ($code != 0) {
+        LOGD("向客户端返回了错误，返回内容是: {$output}");
+    }
     
     die();
 }
@@ -263,4 +269,269 @@ function getFriendsWithLocationByGoogleUID($google_uid) {
 
     return $friends;
 }
+
+
+/**
+ * 根据最新的位置信息，计算用户新增的移动距离
+ */
+function distanceDelta($location) {
+    global $db;
+    global $MIN_DISTANCE_ACCURATENESS;
+    
+    /**
+     * 查询在 rtime 上与当前报告位置相邻的两个距离 A 和 B
+     * 用户上报的位置为 L, 那么用户新增的移动距离就是 DISTANCE(A, L) + DISTANCE(L, B) - DISTANCE(A, B)
+     */
+    
+    if ($location['accurateness'] > $MIN_DISTANCE_ACCURATENESS) {
+        LOGD("输入距离的　accurateness > MIN_DISTANCE_ACCURATENESS ({$location['accurateness']} > $MIN_DISTANCE_ACCURATENESS");
+        return 0;
+    }
+    
+    /// 1. 查询用户
+    $user = getByUID($location['uid']);
+    if (!$user) {
+        LOGE("无法获取用户(uid={$location['uid']})");
+        return FALSE;
+    }
+    
+    
+    /// 2. 查询该用户已经上报的两个相邻的位置
+    /// FIXME: 此处应使用事务确保数据一致性
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid'],
+            'rtime[<]' => $location['rtime'],
+            'accurateness[<]' => $MIN_DISTANCE_ACCURATENESS,
+        ],
+        'ORDER' => 'rtime DESC'
+    ];
+    $locA = $db->get('b_location', '*', $where);
+    
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid'],
+            'rtime[>]' => $location['rtime'],
+            'accurateness[<]' => $MIN_DISTANCE_ACCURATENESS,
+        ],
+        'ORDER' => 'rtime ASC'
+    ];
+    $locB = $db->get('b_location', '*', $where);
+            
+    
+    /// 3. 计算用户新增的移动距离
+    $disDelta = 0;
+    if (!$locA && !$locB) {
+        LOGD("当前位置没有相邻位置信息，忽略, locaiton=" . json_encode($location));
+        return 0;
+    }
+    else if ($locA && $locB) {
+        $disAB = greatCircleDistance($locA['longitude'], $locA['latitude'], $locB['longitude'], $locB['latitude']);
+        $disAL = greatCircleDistance($locA['longitude'], $locA['latitude'], $location['longitude'], $location['latitude']);
+        $disLB = greatCircleDistance($location['longitude'], $location['latitude'], $locB['longitude'], $locB['latitude']);
+        
+        $disDelta = $disAL + $disLB - $disAB;
+        
+        LOGD("用户({$user['name']}<{$user['email']}>)位置增量计算 disAL + disLB - disAB = ${disAL} + {$disLB} - {$disAB} = {$disDelta}");
+    }
+    else if ($locA && !$locB) {
+        /// 当前位置没有更旧或更新的位置信息，则位置增量就是当前位置与更新位置之差
+        $disDelta = greatCircleDistance($locA['longitude'], $locA['latitude'], $location['longitude'], $location['latitude']);
+    }
+    else if (!$locA && $locB) {
+        /// 当前位置没有更旧或更新的位置信息，则位置增量就是当前位置与更新位置之差
+        $disDelta = greatCircleDistance($locB['longitude'], $locB['latitude'], $location['longitude'], $location['latitude']);
+    }
+    else {
+        LOGE("代码运行到了不可能的位置. " . var_export(debug_backtrace(), TRUE));
+        return 0;
+    }
+    
+    return $disDelta;
+}
+
+
+/**
+ * 获取用户的统计信息
+ * 
+ * @param string    用户唯一编号
+ * @param mixed     需要获取的统计信息的字段，默认返回所有字段，如果只需要特定字段，请传入字段名数组，如 ['distance', 'distance_per_day']
+ */
+function getUserStatData($uid, $fields = '*') {
+    global $db;
+    
+    $user = getByUID($uid);
+    if (!$user) {
+        LOGW("编号为 {$uid} 的用户不存在");
+        return FALSE;
+    }
+    
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid'],
+        ]
+    ];
+    $stat = $db->get('b_stat', $fields, $where);
+    
+    if (!$stat) {
+        createUserStatData($uid);
+    }
+    
+    $stat = $db->get('b_stat', $fields, $where);
+    
+    return $stat;
+}
+
+/**
+ * 根据最新上报的位置信息，更新用户的统计数据
+ */
+function updateUserStatData($location) {
+    global $db;
+    
+    $user = getByUID($location['uid']);
+    if (!$user) {
+        LOGE("编号为 {$uid} 的用户不存在");
+        return FALSE;
+    }
+    
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid']
+        ]
+    ];
+    
+    $stat = $db->get('b_stat', '*', $where);
+    
+    if (!$stat) {
+        createUserStatData($uid);
+    }
+    $stat = $db->get('b_stat', '*', $where);
+    
+    $data = [];
+    if ($stat['min_time'] > $location['rtime']) {
+        $data['min_time'] = $location['rtime'];
+        $stat['min_time'] = $data['min_time'];
+    }
+    if ($stat['max_time'] < $location['rtime']) {
+        $data['max_time'] = $location['rtime'];
+        $stat['max_time'] = $data['max_time'];
+    }
+    $d = distanceDelta($location);
+    if ($d) {
+        $data['distance'] = $stat['distance'] + $d;
+        $data['distance_per_day'] = $data['distance'] / (($stat['max_time'] - $stat['min_time']) / 86400);
+        LOGD("用户（{$user['name']}<{$user['email']}>）移动距离大于 0，移动了 {$d} 米，总计 {$data['distance']} 米，日均 {$data['distance_per_day']} 米");
+    }
+    
+    if (!empty($data)) {
+        $res = $db->update('b_stat', $data, $where);
+        if (!$res) {
+            LOGD(sprintf("更新失败: (%s): %s", $db->last_query(), var_export($db->error(), TRUE)));
+            return FALSE;
+        }
+    }
+    
+    return TRUE;
+}
+
+
+/**
+ * 新建用户统计数据
+ */
+function createUserStatData($uid) {
+    global $db;
+    global $MIN_DISTANCE_ACCURATENESS;
+    
+    $user = getByUID($uid);
+    if (!$user) {
+        LOGE("编号为 {$uid} 的用户不存在");
+        return FALSE;
+    }
+    
+    /// 计算用户移动距离
+    $min_time = PHP_INT_MAX;
+    $max_time = 0;
+    
+    $where = [
+        'AND' => [
+            'google_uid' => $user['google_uid'],
+            'accurateness[<]' => $MIN_DISTANCE_ACCURATENESS,
+        ],
+        'ORDER' => 'rtime ASC',
+    ];
+    $locs = $db->select('b_location', ['latitude', 'longitude', 'rtime'], $where);
+    
+    $distance = 0;
+    if ($locs) {
+        $lastLat = NULL;
+        $lastLng = NULL;
+        $cnt = count($locs);
+        
+        /// 每毫秒大约计算 1 个位置，30s 大概计算 15w 个位置
+        if ($cnt > 10000) {
+            $s = round($cnt / 1000 * 2);
+            set_time_limit($s);
+            LOGN("将运行超时时间设置为 $s 秒");
+        }
+            
+        
+        foreach ($locs as $loc) {
+            if ($lastLat !== NULL) {
+                $d = greatCircleDistance($lastLng, $lastLat, $loc['longitude'], $loc['latitude']);
+                $distance += $d;
+                LOGD("计算用户({$user['name']}<{$user['email']}>)移动距离，移动了 {$d} 米，总计 {$distance} 米({$i}/{$cnt})");
+            }
+            else {
+                $min_time = $loc['rtime'];
+            }
+            
+            $lastLat = $loc['latitude'];
+            $lastLng = $loc['longitude'];
+            $max_time = $loc['rtime'];
+            
+            $i++;
+        }
+    }
+            
+    
+    $data = [
+        'ctime' => time(),
+        'mtime' => time(),
+        'distance' => $distance,
+        'max_time' => $max_time,
+        'min_time' => $min_time,
+        'google_uid' => $user['google_uid'],
+        'distance_per_day' => $distance / (($max_time - $min_time) / 86400),
+    ];
+    
+    LOGD(var_export($data, TRUE));
+    
+    $ret = $db->insert('b_stat', $data);
+    if (!$ret) {
+        LOGD(sprintf("插入失败: (%s): %s", $db->last_query(), var_export($db->error(), TRUE)));
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+
+/**
+ * 计算两个以经纬度给出的点的大圆距离
+ * 
+ * @return float    两点的大圆距离，单位：米
+ */
+function greatCircleDistance($lon1, $lat1, $lon2, $lat2){ 
+    return (2*atan2(sqrt(sin(($lat1-$lat2)*M_PI/180/2)
+    *sin(($lat1-$lat2)*M_PI/180/2)+
+    cos($lat2*M_PI/180)*cos($lat1*M_PI/180)
+    *sin(($lon1-$lon2)*M_PI/180/2)
+    *sin(($lon1-$lon2)*M_PI/180/2)),
+    sqrt(1-sin(($lat1-$lat2)*M_PI/180/2)
+    *sin(($lat1-$lat2)*M_PI/180/2)
+    +cos($lat2*M_PI/180)*cos($lat1*M_PI/180)
+    *sin(($lon1-$lon2)*M_PI/180/2)
+    *sin(($lon1-$lon2)*M_PI/180/2))))*6378140;
+}
+
 ?>
