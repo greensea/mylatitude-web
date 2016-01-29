@@ -43,6 +43,11 @@ if (!$loc) {
 }
 else {
     unset($loc['uid']);
+    
+    $stat = getUserStatData($uid, ['distance', 'distance_per_day']);
+    $loc['stat'] = $stat;
+    
+    
     apiout(0, "操作成功", $loc);
     die();
 }
