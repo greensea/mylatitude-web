@@ -263,4 +263,28 @@ function getFriendsWithLocationByGoogleUID($google_uid) {
 
     return $friends;
 }
+
+
+/**
+ * 精简轨迹
+ * 
+ * @param array     所有的轨迹，传入的轨迹应该按照时间倒序排列
+ * @param int       精简到多少个点
+ */
+function compressTracks($tracks, $count = 30) {
+    $mytracks = [];
+    
+    if (count($tracks) > $count) {
+        $step = round(count($tracks) / $count) + 1;
+        for ($i = 0; $i < count($tracks); $i += $step) {
+            $mytracks[] = $tracks[$i];
+        }
+    }
+    else {
+        $mytracks = $tracks;
+    }
+    
+    return $mytracks;
+}
+
 ?>

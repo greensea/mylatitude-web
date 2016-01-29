@@ -6,14 +6,12 @@ require_once('../../../header.php');
 
 
 $uid = getv('uid');
+$date = getv('date');
 $user = getByUID($uid);
 if (!$user) {
     LOGD("(uid={$uid}）找不到对应的用户");
     apiout(-2, '你还没有登录');
 }
-
-/// 获取好友位置信息
-$friends = getFriendsWithLocationByGoogleUID($user['google_uid']);
 
 
 /// 获取我的轨迹
@@ -42,7 +40,6 @@ array_reverse($mytracks);
 
 $data = [
     'tracks' => $mytracks,
-    'friends' => $friends
 ];
 
 apiout(0, '操作成功', $data);
