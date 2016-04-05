@@ -2,7 +2,7 @@
 /**
  * 获取好友列表
  */
-require_once('../../../header.php');
+require_once('../../header.php');
 
 
 $uid = getv('uid');
