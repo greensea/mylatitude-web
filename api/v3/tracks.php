@@ -30,9 +30,7 @@ $cond['google_uid'] = $user['google_uid'];
 
 /// 获取我的轨迹
 $where = [
-    'AND' => [
-        $cond,
-    ],
+    'AND' => $cond,
     'ORDER' => 'rtime DESC'
 ];
 $tracks = $db->select('b_location', ['latitude', 'longitude', 'rtime'], $where);
