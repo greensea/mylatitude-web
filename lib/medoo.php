@@ -163,8 +163,17 @@ class medoo
 		}
 
 		array_push($this->logs, $query);
+		
+		$t1 = microtime(TRUE);
 
-		return $this->pdo->query($query);
+		$ret = $this->pdo->query($query);
+		
+		$elapsed = microtime(TRUE) - $t1;
+		$elapsed = round($elapsed * 1000 * 1000) / 1000;
+		
+		LOGD("执行 SQL 耗时 $elapsed 毫秒: $query");
+		
+		return $ret;
 	}
 
 	public function exec($query)
@@ -180,7 +189,16 @@ class medoo
 
 		array_push($this->logs, $query);
 
-		return $this->pdo->exec($query);
+		$t1 = microtime(TRUE);
+		
+		$ret = $this->pdo->exec($query);
+		
+		$elapsed = microtime(TRUE) - $t1;
+		$elapsed = round($elapsed * 1000 * 1000) / 1000;
+		
+		LOGD("执行 SQL 耗时 $elapsed 毫秒: $query");
+		
+		return $ret;
 	}
 
 	public function quote($string)
